@@ -1,4 +1,4 @@
-package session
+package session_default
 
 import (
 	"errors"
@@ -91,7 +91,7 @@ func (connect *defaultSessionConnect) Delete(id string) error {
 //清空会话
 func (connect *defaultSessionConnect) Clear(prefix string) error {
 	connect.sessions.Range(func(k, _ Any) bool {
-		if strings.HasPrefix(k, prefix) {
+		if strings.HasPrefix(k.(string), prefix) {
 			connect.sessions.Delete(k)
 		}
 		return true

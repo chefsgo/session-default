@@ -1,4 +1,4 @@
-package session
+package session_default
 
 import (
 	"github.com/chefsgo/chef"

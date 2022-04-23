@@ -7,7 +7,7 @@ import (
 	"time"
 
 	. "github.com/chefsgo/base"
-	"github.com/chefsgo/chef"
+	"github.com/chefsgo/session"
 )
 
 var (
@@ -15,45 +15,45 @@ var (
 )
 
 type (
-	defaultSessionDriver  struct{}
-	defaultSessionConnect struct {
+	defaultDriver  struct{}
+	defaultConnect struct {
 		name     string
-		config   chef.SessionConfig
-		setting  defaultSessionSetting
+		config   session.Config
+		setting  defaultSetting
 		sessions sync.Map
 	}
-	defaultSessionSetting struct {
+	defaultSetting struct {
 	}
-	defaultSessionValue struct {
+	defaultValue struct {
 		Value  Map
 		Expiry time.Time
 	}
 )
 
 //连接
-func (driver *defaultSessionDriver) Connect(name string, config chef.SessionConfig) (chef.SessionConnect, error) {
-	setting := defaultSessionSetting{}
+func (driver *defaultDriver) Connect(name string, config session.Config) (session.Connect, error) {
+	setting := defaultSetting{}
 
-	return &defaultSessionConnect{
+	return &defaultConnect{
 		name: name, config: config, setting: setting,
 		sessions: sync.Map{},
 	}, nil
 }
 
 //打开连接
-func (connect *defaultSessionConnect) Open() error {
+func (connect *defaultConnect) Open() error {
 	return nil
 }
 
 //关闭连接
-func (connect *defaultSessionConnect) Close() error {
+func (connect *defaultConnect) Close() error {
 	return nil
 }
 
 //查询会话，
-func (connect *defaultSessionConnect) Read(id string) (Map, error) {
+func (connect *defaultConnect) Read(id string) (Map, error) {
 	if value, ok := connect.sessions.Load(id); ok {
-		if vv, ok := value.(defaultSessionValue); ok {
+		if vv, ok := value.(defaultValue); ok {
 			if vv.Expiry.Unix() > time.Now().Unix() {
 				return vv.Value, nil
 			} else {
@@ -66,14 +66,14 @@ func (connect *defaultSessionConnect) Read(id string) (Map, error) {
 }
 
 //更新会话
-func (connect *defaultSessionConnect) Write(id string, val Map, expiry time.Duration) error {
+func (connect *defaultConnect) Write(id string, val Map, expiry time.Duration) error {
 	now := time.Now()
 
 	if expiry <= 0 {
 		expiry = connect.config.Expiry
 	}
 
-	value := defaultSessionValue{
+	value := defaultValue{
 		Value: val, Expiry: now.Add(expiry),
 	}
 
@@ -83,13 +83,13 @@ func (connect *defaultSessionConnect) Write(id string, val Map, expiry time.Dura
 }
 
 //删除会话
-func (connect *defaultSessionConnect) Delete(id string) error {
+func (connect *defaultConnect) Delete(id string) error {
 	connect.sessions.Delete(id)
 	return nil
 }
 
 //清空会话
-func (connect *defaultSessionConnect) Clear(prefix string) error {
+func (connect *defaultConnect) Clear(prefix string) error {
 	connect.sessions.Range(func(k, _ Any) bool {
 		if strings.HasPrefix(k.(string), prefix) {
 			connect.sessions.Delete(k)

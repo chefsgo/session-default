@@ -1,13 +1,13 @@
 package session_default
 
 import (
-	"github.com/chefsgo/chef"
+	"github.com/chefsgo/session"
 )
 
-func Driver() chef.SessionDriver {
-	return &defaultSessionDriver{}
+func Driver() session.Driver {
+	return &defaultDriver{}
 }
 
 func init() {
-	chef.Register("default", Driver())
+	session.Register("default", Driver())
 }
